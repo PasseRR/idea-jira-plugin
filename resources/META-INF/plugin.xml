@@ -1,0 +1,31 @@
+<idea-plugin version="2">
+    <id>com.gome.plugin.jira</id>
+    <name>Jira Connection Plugin</name>
+    <version>1.0</version>
+    <vendor email="xie__hai@sina.com" url="https://github.com/PasseRR">PasseRR</vendor>
+
+    <description>
+        <![CDATA[
+          用于Jira工作任务更新<br>
+        ]]>
+    </description>
+
+    <change-notes>
+        <![CDATA[
+          beta version
+        ]]>
+    </change-notes>
+
+    <idea-version since-build="141.0"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- settings配置 -->
+        <applicationConfigurable instance="com.gome.idea.plugins.jira.GJiraConfigurable"/>
+    </extensions>
+
+    <actions>
+    </actions>
+
+    <application-components>
+    </application-components>
+</idea-plugin>
