@@ -1,4 +1,4 @@
-package com.gome.idea.plugins.jira;
+package com.gome.idea.plugins.jira.settings;
 
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 /**
+ * Gjira settings Configurable
  * @author xiehai1
  * @date 2017/05/10 10:49
  * @Copyright(c) gome inc Gome Co.,LTD
@@ -37,17 +38,19 @@ public class GJiraConfigurable implements SearchableConfigurable {
 
     @Override
     public boolean isModified() {
-        return false;
+        return GJiraForm.me().isModify();
     }
 
     @Override
     public void apply() throws ConfigurationException {
-
+        GJiraSettings.me().setJiraUrl(GJiraForm.me().getJiraUrl());
+        GJiraSettings.me().setUsername(GJiraForm.me().getUsername());
+        GJiraSettings.me().setPassword(GJiraForm.me().getPassword());
     }
 
     @Override
     public void reset() {
-
+        GJiraForm.me().reset();
     }
 
     @Override

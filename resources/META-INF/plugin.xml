@@ -20,7 +20,9 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- settings配置 -->
-        <applicationConfigurable instance="com.gome.idea.plugins.jira.GJiraConfigurable"/>
+        <applicationConfigurable instance="com.gome.idea.plugins.jira.settings.GJiraConfigurable"/>
+        <applicationService serviceInterface="com.gome.idea.plugins.jira.settings.GJiraSettings"
+                        serviceImplementation="com.gome.idea.plugins.jira.settings.GJiraSettings"/>
     </extensions>
 
     <actions>
