@@ -1,4 +1,4 @@
-package com.gome.idea.plugins.jira.settings;
+package com.gome.idea.plugins.jira;
 
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;

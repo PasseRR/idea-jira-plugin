@@ -1,4 +1,4 @@
-package com.gome.idea.plugins.jira.settings;
+package com.gome.idea.plugins.jira;
 
 import javax.swing.*;
 

@@ -21,13 +21,14 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- settings配置 -->
         <applicationConfigurable instance="com.gome.idea.plugins.jira.settings.GJiraConfigurable"/>
-        <applicationService serviceInterface="com.gome.idea.plugins.jira.settings.GJiraSettings"
-                        serviceImplementation="com.gome.idea.plugins.jira.settings.GJiraSettings"/>
+        <applicationService serviceInterface="com.gome.idea.plugins.jira.GJiraSettings"
+                        serviceImplementation="com.gome.idea.plugins.jira.GJiraSettings"/>
+        <!-- tool window配置 -->
+        <toolWindow id="jira" anchor="bottom" icon="/icon/jira.png" factoryClass="com.gome.idea.plugins.jira.toolwindow.GJiraToolWindow"/>
     </extensions>
 
     <actions>
     </actions>
-
     <application-components>
     </application-components>
 </idea-plugin>

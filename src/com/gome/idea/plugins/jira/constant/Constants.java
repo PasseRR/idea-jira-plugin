@@ -11,6 +11,10 @@ public interface Constants {
          * jira用户名密码验证
          */
         String VERFIY = "/rest/auth/1/session";
+        /**
+         * issure查询
+         */
+        String SEARCH = "/rest/api/2/search";
     }
 
     interface Http {

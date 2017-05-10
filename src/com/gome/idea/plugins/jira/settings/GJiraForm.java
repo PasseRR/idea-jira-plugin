@@ -1,5 +1,7 @@
 package com.gome.idea.plugins.jira.settings;
 
+import com.gome.idea.plugins.jira.GJiraSettings;
+import com.gome.idea.plugins.jira.GJiraUi;
 import com.gome.idea.plugins.jira.constant.Constants;
 import com.gome.idea.plugins.jira.util.Base64Util;
 import com.intellij.openapi.ui.Messages;
@@ -20,7 +22,7 @@ import java.io.IOException;
  * @date 2017/05/10 11:22
  * @Copyright(c) gome inc Gome Co.,LTD
  */
-public class GJiraForm implements GJiraUi{
+public class GJiraForm implements GJiraUi {
     private JTextField jiraUrlTextField;
     private JButton testJiraConnectionButton;
     private JPanel rootPanel;

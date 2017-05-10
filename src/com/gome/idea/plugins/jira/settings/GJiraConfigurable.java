@@ -1,5 +1,6 @@
 package com.gome.idea.plugins.jira.settings;
 
+import com.gome.idea.plugins.jira.GJiraSettings;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import org.jetbrains.annotations.Nls;
