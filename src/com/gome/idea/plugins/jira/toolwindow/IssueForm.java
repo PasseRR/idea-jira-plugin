@@ -7,6 +7,7 @@ import com.gome.idea.plugins.jira.util.Base64Util;
 import com.gome.idea.plugins.jira.vo.IssueVo;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -68,18 +69,22 @@ public class IssueForm implements GJiraUi {
 
     }
 
-    private void reload(){
+    /**
+     * 重新加载数据
+     */
+    protected void reload(){
         List<IssueVo> issues = this.getIssues();
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("任务列表");
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         for(IssueVo issueVo : issues){
             treeModel.insertNodeInto(
-                    new DefaultMutableTreeNode(issueVo.getKey() + " " + issueVo.getStatus() + " " + issueVo.getSummary()),
+                    new DefaultMutableTreeNode(issueVo),
                     root,
                     root.getChildCount()
             );
         }
         this.issueTree.setModel(treeModel);
+        this.issueTree.setCellRenderer(new GJiraDefaultTreeCellRenderer());
         this.issueTree.updateUI();
     }
 
@@ -108,10 +113,12 @@ public class IssueForm implements GJiraUi {
                         issueVo.setKey(issue.get("key").getAsString());
                         JsonObject fields = issue.get("fields").getAsJsonObject();
                         issueVo.setSummary(fields.get("summary").getAsString());
+                        JsonElement timeOriginalEstimate = fields.get("timeoriginalestimate");
+                        issueVo.setTimeOriginalEstimate(timeOriginalEstimate.isJsonNull() ? null : timeOriginalEstimate.getAsLong());
                         JsonObject status = fields.get("status").getAsJsonObject();
                         issueVo.setStatus(status.get("name").getAsString());
                         JsonObject issueType = fields.get("issuetype").getAsJsonObject();
-                        issueVo.setIssuetype(issueType.get("name").getAsString());
+                        issueVo.setIssueType(issueType.get("name").getAsString());
                         issues.add(issueVo);
                     }
                 }

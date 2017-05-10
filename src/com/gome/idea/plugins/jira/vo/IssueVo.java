@@ -15,6 +15,8 @@ public class IssueVo {
     private String summary;
     // 状态
     private String status;
+    // 预估时间
+    private Long timeOriginalEstimate;
 
     public String getKey() {
         return key;
@@ -22,14 +24,6 @@ public class IssueVo {
 
     public void setKey(String key) {
         this.key = key;
-    }
-
-    public String getIssuetype() {
-        return issueType;
-    }
-
-    public void setIssuetype(String issuetype) {
-        this.issueType = issuetype;
     }
 
     public String getSummary() {
@@ -48,6 +42,22 @@ public class IssueVo {
         this.status = status;
     }
 
+    public String getIssueType() {
+        return issueType;
+    }
+
+    public void setIssueType(String issueType) {
+        this.issueType = issueType;
+    }
+
+    public Long getTimeOriginalEstimate() {
+        return timeOriginalEstimate;
+    }
+
+    public void setTimeOriginalEstimate(Long timeOriginalEstimate) {
+        this.timeOriginalEstimate = timeOriginalEstimate;
+    }
+
     @Override
     public String toString() {
         return "IssueVo{" +
@@ -55,6 +65,7 @@ public class IssueVo {
                 ", issueType='" + issueType + '\'' +
                 ", summary='" + summary + '\'' +
                 ", status='" + status + '\'' +
+                ", timeOriginalEstimate=" + timeOriginalEstimate +
                 '}';
     }
 }
