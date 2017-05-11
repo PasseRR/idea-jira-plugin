@@ -26,7 +26,7 @@ import java.text.MessageFormat;
 public class JiraHttpUtil {
     private static final GJiraSettings settings = GJiraSettings.me();
     public static boolean login(){
-        return login(settings.getUsername(), settings.getPassword());
+        return login(settings.getJiraUrl(), settings.getUsername(), settings.getPassword());
     }
 
     /**
@@ -35,11 +35,11 @@ public class JiraHttpUtil {
      * @param password
      * @return
      */
-    public static boolean login(String username, String password){
+    public static boolean login(String url, String username, String password){
         try {
             CloseableHttpClient client = HttpClients.createDefault();
-            HttpPost post = new HttpPost(new URI(settings.getJiraUrl() + Constants.JIRA.VERFIY));
-            setJiraHeader(post);
+            HttpPost post = new HttpPost(new URI(url + Constants.JIRA.VERFIY));
+            setJiraHeader(post, username, password);
             JsonObject json = new JsonObject();
             json.addProperty("username", username);
             json.addProperty("password", password);
@@ -58,7 +58,11 @@ public class JiraHttpUtil {
      * @param base
      */
     public static void setJiraHeader(HttpRequestBase base){
-        base.setHeader("Authorization", Base64Util.jiraBase64(settings.getUsername(), settings.getPassword()));
+        setJiraHeader(base, settings.getUsername(), settings.getPassword());
+    }
+
+    public static void setJiraHeader(HttpRequestBase base, String username, String password){
+        base.setHeader("Authorization", Base64Util.jiraBase64(username, password));
     }
 
     /**

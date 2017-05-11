@@ -58,7 +58,7 @@ public class GJiraForm extends AbstractGJiraUi {
         jiraLoginButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (JiraHttpUtil.login(GJiraForm.this.getUsername(), GJiraForm.this.getPassword())) {
+                if (JiraHttpUtil.login(GJiraForm.this.getJiraUrl(), GJiraForm.this.getUsername(), GJiraForm.this.getPassword())) {
                     Messages.showMessageDialog("验证成功!", "GJira", Messages.getInformationIcon());
                 } else {
                     Messages.showMessageDialog("验证失败!", "GJira", Messages.getErrorIcon());
