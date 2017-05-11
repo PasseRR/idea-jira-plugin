@@ -36,7 +36,7 @@ public class GJiraToolWindow implements ToolWindowFactory {
             // 跳转到settings配置
             component = IllegalForm.me().getRootComponent();
         } else {
-            component = IssueForm.me().getRootComponent();
+            component = IssueForm.me(project).getRootComponent();
         }
         Content content = contentFactory.createContent(component, "Control", false);
         toolWindow.getContentManager().addContent(content);

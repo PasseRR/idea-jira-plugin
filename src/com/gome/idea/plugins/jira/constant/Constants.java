@@ -15,6 +15,10 @@ public interface Constants {
          * issure查询
          */
         String SEARCH = "/rest/api/2/search";
+        /**
+         * issue预估时间
+         */
+        String ESTIMATE = "/rest/api/2/issue/";
     }
 
     interface Http {
