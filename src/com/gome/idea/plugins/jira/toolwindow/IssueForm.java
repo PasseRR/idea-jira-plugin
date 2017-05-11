@@ -11,7 +11,6 @@ import com.google.gson.JsonObject;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.project.Project;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -50,7 +49,7 @@ public class IssueForm extends AbstractGJiraUi {
     private JPanel rootPanel;
     private JTree issueTree;
     private JPopupMenu popupMenu;
-    private Project project;
+    private GJiraToolWindow toolWindow;
 
     public IssueForm() {
         this.popupMenu = new JPopupMenu();
@@ -65,7 +64,7 @@ public class IssueForm extends AbstractGJiraUi {
                     boolean flg = IssueForm.this.log(issueVo);
                     final Notification n = flg ? new Notification("GJira", "jira工作日志记录", "记录成功!", NotificationType.INFORMATION)
                             : new Notification("GJira", "jira工作日志记录", "记录失败!", NotificationType.WARNING);
-                    Notifications.Bus.notify(n, project);
+                    Notifications.Bus.notify(n);
                     new GJiraNotificationTimer(n).start();
                     IssueForm.this.reload();
                 }
@@ -82,7 +81,7 @@ public class IssueForm extends AbstractGJiraUi {
                     boolean flg = IssueForm.this.updateOriginalEstimate(issueVo);
                     final Notification n = flg ? new Notification("GJira", "jira预估时间", "预估成功!", NotificationType.INFORMATION)
                             : new Notification("GJira", "jira预估时间", "预估失败!", NotificationType.WARNING);
-                    Notifications.Bus.notify(n, project);
+                    Notifications.Bus.notify(n);
                     new GJiraNotificationTimer(n).start();
                     IssueForm.this.reload();
                 }
@@ -93,7 +92,7 @@ public class IssueForm extends AbstractGJiraUi {
         refresh.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                IssueForm.this.reload();
+                IssueForm.this.toolWindow.reload();
             }
         });
         this.popupMenu.add(log);
@@ -125,16 +124,16 @@ public class IssueForm extends AbstractGJiraUi {
         });
     }
 
-    public IssueForm(Project project) {
+    public IssueForm(GJiraToolWindow toolWindow) {
         this();
-        this.project = project;
+        this.toolWindow = toolWindow;
     }
 
-    public static IssueForm me(Project project) {
+    public static IssueForm me(GJiraToolWindow toolWindow) {
         if (null == instance) {
             synchronized (IssueForm.class) {
                 if (null == instance) {
-                    instance = new IssueForm(project);
+                    instance = new IssueForm(toolWindow);
                 }
             }
         }

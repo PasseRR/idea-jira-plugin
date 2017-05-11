@@ -1,6 +1,6 @@
 package com.gome.idea.plugins.jira;
 
-import com.gome.idea.plugins.jira.util.Base64Util;
+import com.gome.idea.plugins.jira.util.JiraHttpUtil;
 import org.apache.http.client.methods.HttpRequestBase;
 
 /**
@@ -12,7 +12,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 public abstract class AbstractGJiraUi implements GJiraUi{
     private static final GJiraSettings SETTINGS = GJiraSettings.me();
     protected void header(HttpRequestBase base){
-        base.setHeader("Authorization", Base64Util.jiraBase64(this.getUsername(), this.getPassword()));
+        JiraHttpUtil.setJiraHeader(base);
     }
 
     protected String getUsername(){

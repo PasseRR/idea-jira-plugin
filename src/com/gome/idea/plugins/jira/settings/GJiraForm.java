@@ -1,9 +1,8 @@
 package com.gome.idea.plugins.jira.settings;
 
+import com.gome.idea.plugins.jira.AbstractGJiraUi;
 import com.gome.idea.plugins.jira.GJiraSettings;
-import com.gome.idea.plugins.jira.GJiraUi;
-import com.gome.idea.plugins.jira.constant.Constants;
-import com.gome.idea.plugins.jira.util.Base64Util;
+import com.gome.idea.plugins.jira.util.JiraHttpUtil;
 import com.intellij.openapi.ui.Messages;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -18,11 +17,12 @@ import java.io.IOException;
 
 /**
  * settings ui
+ *
  * @author xiehai1
  * @date 2017/05/10 11:22
  * @Copyright(c) gome inc Gome Co.,LTD
  */
-public class GJiraForm implements GJiraUi {
+public class GJiraForm extends AbstractGJiraUi {
     private JTextField jiraUrlTextField;
     private JButton testJiraConnectionButton;
     private JPanel rootPanel;
@@ -43,9 +43,9 @@ public class GJiraForm implements GJiraUi {
                     CloseableHttpClient client = HttpClients.createDefault();
                     HttpGet get = new HttpGet(GJiraForm.this.getJiraUrl());
                     CloseableHttpResponse response = client.execute(get);
-                    if(HttpStatus.SC_OK == response.getStatusLine().getStatusCode()){
+                    if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
                         Messages.showMessageDialog("连接成功!", "GJira", Messages.getInformationIcon());
-                    }else{
+                    } else {
                         Messages.showMessageDialog("连接失败!", "GJira", Messages.getErrorIcon());
                     }
                 } catch (IOException e1) {
@@ -58,17 +58,9 @@ public class GJiraForm implements GJiraUi {
         jiraLoginButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                try {
-                    CloseableHttpClient client = HttpClients.createDefault();
-                    HttpGet get = new HttpGet(GJiraForm.this.getJiraUrl() + Constants.JIRA.VERFIY);
-                    get.setHeader("Authorization", Base64Util.jiraBase64(GJiraForm.this.getUsername(), GJiraForm.this.getPassword()));
-                    CloseableHttpResponse response = client.execute(get);
-                    if(HttpStatus.SC_OK == response.getStatusLine().getStatusCode()){
-                        Messages.showMessageDialog("验证成功!", "GJira", Messages.getInformationIcon());
-                    }else{
-                        Messages.showMessageDialog("验证失败!", "GJira", Messages.getErrorIcon());
-                    }
-                } catch (IOException e1) {
+                if (JiraHttpUtil.login(GJiraForm.this.getUsername(), GJiraForm.this.getPassword())) {
+                    Messages.showMessageDialog("验证成功!", "GJira", Messages.getInformationIcon());
+                } else {
                     Messages.showMessageDialog("验证失败!", "GJira", Messages.getErrorIcon());
                 }
             }
@@ -78,7 +70,7 @@ public class GJiraForm implements GJiraUi {
     public static GJiraForm me() {
         if (null == instance) {
             synchronized (GJiraForm.class) {
-                if(null == instance){
+                if (null == instance) {
                     instance = new GJiraForm();
                 }
             }
@@ -106,15 +98,15 @@ public class GJiraForm implements GJiraUi {
         this.passwordField.setText(GJiraSettings.me().getPassword());
     }
 
-    protected String getJiraUrl(){
+    protected String getJiraUrl() {
         return this.jiraUrlTextField.getText();
     }
 
-    protected String getUsername(){
+    protected String getUsername() {
         return this.usernameTextField.getText();
     }
 
-    protected String getPassword(){
+    protected String getPassword() {
         return new String(this.passwordField.getPassword());
     }
 }

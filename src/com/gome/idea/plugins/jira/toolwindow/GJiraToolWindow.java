@@ -1,22 +1,14 @@
 package com.gome.idea.plugins.jira.toolwindow;
 
-import com.gome.idea.plugins.jira.GJiraSettings;
-import com.gome.idea.plugins.jira.util.Base64Util;
+import com.gome.idea.plugins.jira.util.JiraHttpUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.openapi.wm.ex.ToolWindowManagerAdapter;
+import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.jetbrains.annotations.NotNull;
-
-import java.net.URI;
-
-import static com.gome.idea.plugins.jira.constant.Constants.JIRA.VERFIY;
 
 /**
  * jira tool window
@@ -26,9 +18,31 @@ import static com.gome.idea.plugins.jira.constant.Constants.JIRA.VERFIY;
  * @Copyright(c) gome inc Gome Co.,LTD
  */
 public class GJiraToolWindow implements ToolWindowFactory {
+    private ToolWindow root;
     @Override
-    public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        boolean flg = this.isLegal();
+    public void createToolWindowContent(@NotNull final Project project, @NotNull ToolWindow toolWindow) {
+        this.root = toolWindow;
+        this.reload();
+
+        // toolWindow 状态变化监听
+        ((ToolWindowManagerEx) ToolWindowManagerEx.getInstance(project)).addToolWindowManagerListener(
+                new ToolWindowManagerAdapter() {
+                    @Override
+                    public void stateChanged() {
+                        ToolWindow jira = ToolWindowManagerEx.getInstance(project).getToolWindow("jira");
+                        if (jira != null) {
+                            GJiraToolWindow.this.reload();
+                        }
+                    }
+                }
+        );
+    }
+
+    /**
+     * tool window reload
+     */
+    public void reload() {
+        boolean flg = JiraHttpUtil.login();
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         javax.swing.JComponent component;
         if (!flg) {
@@ -36,27 +50,13 @@ public class GJiraToolWindow implements ToolWindowFactory {
             // 跳转到settings配置
             component = IllegalForm.me().getRootComponent();
         } else {
-            component = IssueForm.me(project).getRootComponent();
+            component = IssueForm.me(this).getRootComponent();
+        }
+        Content current = root.getContentManager().findContent("Control");
+        if (null != current) {
+            root.getContentManager().removeContent(current, true);
         }
         Content content = contentFactory.createContent(component, "Control", false);
-        toolWindow.getContentManager().addContent(content);
-    }
-
-    /**
-     * 判断配置用户名密码是否合法
-     *
-     * @return
-     */
-    private boolean isLegal() {
-        final GJiraSettings settings = GJiraSettings.me();
-        try {
-            CloseableHttpClient client = HttpClients.createDefault();
-            HttpGet get = new HttpGet(new URI(settings.getJiraUrl() + VERFIY));
-            get.setHeader("Authorization", Base64Util.jiraBase64(settings.getUsername(), settings.getPassword()));
-            CloseableHttpResponse response = client.execute(get);
-            return HttpStatus.SC_OK == response.getStatusLine().getStatusCode();
-        } catch (Exception e1) {
-            return false;
-        }
+        root.getContentManager().addContent(content);
     }
 }
