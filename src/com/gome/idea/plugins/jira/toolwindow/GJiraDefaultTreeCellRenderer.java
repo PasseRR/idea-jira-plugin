@@ -24,12 +24,13 @@ public class GJiraDefaultTreeCellRenderer extends DefaultTreeCellRenderer {
             StringBuilder sb = new StringBuilder();
             sb.append(issueVo.getKey());
             sb.append(" ");
-            sb.append(issueVo.getTimeOriginalEstimate() == null ? "未预估" : "已预估");
-            sb.append(" ");
             sb.append(issueVo.getStatus());
             sb.append(" ");
             sb.append(issueVo.getSummary());
             this.setText(sb.toString());
+            if(null == issueVo.getTimeOriginalEstimate()){
+                this.setForeground(Color.RED);
+            }
 
             if (issueVo.getIssueType().contains("测试")) {
                 this.setIcon(new ImageIcon(this.getClass().getResource("/icon/bug.png")));

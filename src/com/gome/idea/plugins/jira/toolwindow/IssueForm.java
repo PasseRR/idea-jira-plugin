@@ -78,11 +78,15 @@ public class IssueForm implements GJiraUi {
                     log.setEnabled(false);
                     time.setEnabled(false);
                     if (path != null) {
-                        if(path.getPathCount() != 1){ // 非根节点
-                            log.setEnabled(true);
-                            time.setEnabled(true);
-                        }
                         IssueForm.this.issueTree.setSelectionPath(path);
+                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) IssueForm.this.issueTree.getLastSelectedPathComponent();
+                        if(!node.isRoot()){ // 非根节点
+                            log.setEnabled(true);
+                            IssueVo issueVo = (IssueVo) node.getUserObject();
+                            if(issueVo.getTimeOriginalEstimate() == null){
+                                time.setEnabled(true);
+                            }
+                        }
                     }
                     IssueForm.this.popupMenu.show(IssueForm.this.issueTree, e.getX(), e.getY());
                 }
