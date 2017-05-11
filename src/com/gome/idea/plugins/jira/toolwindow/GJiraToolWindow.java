@@ -1,7 +1,6 @@
 package com.gome.idea.plugins.jira.toolwindow;
 
 import com.gome.idea.plugins.jira.GJiraSettings;
-import com.gome.idea.plugins.jira.constant.Constants;
 import com.gome.idea.plugins.jira.util.Base64Util;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -15,7 +14,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
+import java.net.URI;
+
+import static com.gome.idea.plugins.jira.constant.Constants.JIRA.VERFIY;
 
 /**
  * jira tool window
@@ -30,11 +31,11 @@ public class GJiraToolWindow implements ToolWindowFactory {
         boolean flg = this.isLegal();
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         javax.swing.JComponent component;
-        if(!flg){
+        if (!flg) {
             // 提示用户配置登录信息不合法
             // 跳转到settings配置
             component = IllegalForm.me().getRootComponent();
-        }else{
+        } else {
             component = IssueForm.me().getRootComponent();
         }
         Content content = contentFactory.createContent(component, "Control", false);
@@ -50,11 +51,11 @@ public class GJiraToolWindow implements ToolWindowFactory {
         final GJiraSettings settings = GJiraSettings.me();
         try {
             CloseableHttpClient client = HttpClients.createDefault();
-            HttpGet get = new HttpGet(settings.getJiraUrl() + Constants.JIRA.VERFIY);
+            HttpGet get = new HttpGet(new URI(settings.getJiraUrl() + VERFIY));
             get.setHeader("Authorization", Base64Util.jiraBase64(settings.getUsername(), settings.getPassword()));
             CloseableHttpResponse response = client.execute(get);
             return HttpStatus.SC_OK == response.getStatusLine().getStatusCode();
-        } catch (IOException e1) {
+        } catch (Exception e1) {
             return false;
         }
     }

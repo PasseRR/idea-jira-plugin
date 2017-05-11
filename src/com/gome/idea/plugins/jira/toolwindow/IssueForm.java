@@ -19,6 +19,9 @@ import org.apache.http.util.EntityUtils;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
@@ -26,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * tool window issues form
+ *
  * @author xiehai1
  * @date 2017/05/10 19:23
  * @Copyright(c) gome inc Gome Co.,LTD
@@ -34,15 +39,61 @@ public class IssueForm implements GJiraUi {
     private static IssueForm instance;
     private JPanel rootPanel;
     private JTree issueTree;
+    private JPopupMenu popupMenu;
 
-    public IssueForm(){
+    public IssueForm() {
+        this.popupMenu = new JPopupMenu();
+        final JMenuItem log = new JMenuItem("记录工作日志", new ImageIcon(this.getClass().getResource("/icon/log.png")));
+        log.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // 记录工作日志
+            }
+        });
+        final JMenuItem time = new JMenuItem("预估时间", new ImageIcon(this.getClass().getResource("/icon/time.png")));
+        time.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // 预估时间
+            }
+        });
 
+        final JMenuItem refresh = new JMenuItem("刷新", new ImageIcon(this.getClass().getResource("/icon/refresh.png")));
+        refresh.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                IssueForm.this.reload();
+            }
+        });
+        this.popupMenu.add(log);
+        this.popupMenu.add(time);
+        this.popupMenu.addSeparator();
+        this.popupMenu.add(refresh);
+
+        issueTree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                TreePath path = IssueForm.this.issueTree.getPathForLocation(e.getX(), e.getY());
+                if (e.getButton() == MouseEvent.BUTTON3) { // 右键
+                    log.setEnabled(false);
+                    time.setEnabled(false);
+                    if (path != null) {
+                        if(path.getPathCount() != 1){ // 非根节点
+                            log.setEnabled(true);
+                            time.setEnabled(true);
+                        }
+                        IssueForm.this.issueTree.setSelectionPath(path);
+                    }
+                    IssueForm.this.popupMenu.show(IssueForm.this.issueTree, e.getX(), e.getY());
+                }
+            }
+        });
     }
 
-    public static IssueForm me(){
+    public static IssueForm me() {
         if (null == instance) {
             synchronized (IssueForm.class) {
-                if(null == instance){
+                if (null == instance) {
                     instance = new IssueForm();
                 }
             }
@@ -72,11 +123,11 @@ public class IssueForm implements GJiraUi {
     /**
      * 重新加载数据
      */
-    protected void reload(){
+    protected void reload() {
         List<IssueVo> issues = this.getIssues();
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("任务列表");
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
-        for(IssueVo issueVo : issues){
+        for (IssueVo issueVo : issues) {
             treeModel.insertNodeInto(
                     new DefaultMutableTreeNode(issueVo),
                     root,
@@ -90,9 +141,10 @@ public class IssueForm implements GJiraUi {
 
     /**
      * 获得当前所有任务
+     *
      * @return issues
      */
-    private List<IssueVo> getIssues(){
+    private List<IssueVo> getIssues() {
         List<IssueVo> issues = new ArrayList<IssueVo>();
         final GJiraSettings settings = GJiraSettings.me();
         try {
@@ -102,12 +154,12 @@ public class IssueForm implements GJiraUi {
             HttpGet get = new HttpGet(settings.getJiraUrl() + Constants.JIRA.SEARCH + "?jql=" + param);
             get.setHeader("Authorization", Base64Util.jiraBase64(settings.getUsername(), settings.getPassword()));
             CloseableHttpResponse response = client.execute(get);
-            if(HttpStatus.SC_OK == response.getStatusLine().getStatusCode()){
+            if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
                 String json = EntityUtils.toString(response.getEntity());
                 JsonObject jsonObject = new Gson().fromJson(json, JsonObject.class);
                 JsonArray issueArray = jsonObject.getAsJsonArray("issues");
-                if(issueArray.size() > 0){
-                    for(int i = 0, len = issueArray.size(); i < len; i ++){
+                if (issueArray.size() > 0) {
+                    for (int i = 0, len = issueArray.size(); i < len; i++) {
                         JsonObject issue = issueArray.get(i).getAsJsonObject();
                         IssueVo issueVo = new IssueVo();
                         issueVo.setKey(issue.get("key").getAsString());
