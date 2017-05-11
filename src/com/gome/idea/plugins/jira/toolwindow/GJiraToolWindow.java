@@ -19,9 +19,11 @@ import org.jetbrains.annotations.NotNull;
  */
 public class GJiraToolWindow implements ToolWindowFactory {
     private ToolWindow root;
+    private Project project;
     @Override
     public void createToolWindowContent(@NotNull final Project project, @NotNull ToolWindow toolWindow) {
         this.root = toolWindow;
+        this.project = project;
         this.reload();
 
         // toolWindow 状态变化监听
@@ -48,7 +50,7 @@ public class GJiraToolWindow implements ToolWindowFactory {
         if (!flg) {
             // 提示用户配置登录信息不合法
             // 跳转到settings配置
-            component = IllegalForm.me().getRootComponent();
+            component = IllegalForm.me(this).getRootComponent();
         } else {
             component = IssueForm.me(this).getRootComponent();
         }
@@ -58,5 +60,9 @@ public class GJiraToolWindow implements ToolWindowFactory {
         }
         Content content = contentFactory.createContent(component, "Control", false);
         root.getContentManager().addContent(content);
+    }
+
+    public Project getProject(){
+        return this.project;
     }
 }
