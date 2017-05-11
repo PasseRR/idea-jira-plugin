@@ -19,6 +19,10 @@ public interface Constants {
          * issue预估时间
          */
         String ESTIMATE = "/rest/api/2/issue/";
+        /**
+         * 记录工作日志
+         */
+        String LOG = "/rest/api/2/issue/{0}/worklog";
     }
 
     interface Http {
@@ -26,5 +30,9 @@ public interface Constants {
          * http连接超时时间
          */
         int CONNECT_TIMEOUT = 5 * 1000;
+        /**
+         * json content type
+         */
+        String CONTENT_TYPE_JSON = "application/json";
     }
 }

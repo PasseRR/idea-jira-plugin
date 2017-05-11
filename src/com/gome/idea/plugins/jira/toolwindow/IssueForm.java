@@ -1,6 +1,7 @@
 package com.gome.idea.plugins.jira.toolwindow;
 
 import com.gome.idea.plugins.jira.AbstractGJiraUi;
+import com.gome.idea.plugins.jira.GJiraNotificationTimer;
 import com.gome.idea.plugins.jira.constant.Constants;
 import com.gome.idea.plugins.jira.vo.IssueVo;
 import com.google.gson.Gson;
@@ -14,7 +15,9 @@ import com.intellij.openapi.project.Project;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.utils.DateUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -32,6 +35,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -50,11 +54,21 @@ public class IssueForm extends AbstractGJiraUi {
 
     public IssueForm() {
         this.popupMenu = new JPopupMenu();
-        final JMenuItem log = new JMenuItem("记录工作日志", new ImageIcon(this.getClass().getResource("/icon/log.png")));
+        final JMenuItem log = new JMenuItem("记录工作日志" , new ImageIcon(this.getClass().getResource("/icon/log.png")));
         log.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 记录工作日志
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) IssueForm.this.issueTree.getLastSelectedPathComponent();
+                if (null != node) {
+                    IssueVo issueVo = (IssueVo) node.getUserObject();
+                    boolean flg = IssueForm.this.log(issueVo);
+                    final Notification n = flg ? new Notification("GJira", "jira工作日志记录", "记录成功!", NotificationType.INFORMATION)
+                            : new Notification("GJira", "jira工作日志记录", "记录失败!", NotificationType.WARNING);
+                    Notifications.Bus.notify(n, project);
+                    new GJiraNotificationTimer(n).start();
+                    IssueForm.this.reload();
+                }
             }
         });
         final JMenuItem time = new JMenuItem("预估时间", new ImageIcon(this.getClass().getResource("/icon/time.png")));
@@ -66,9 +80,10 @@ public class IssueForm extends AbstractGJiraUi {
                 if (null != node) {
                     IssueVo issueVo = (IssueVo) node.getUserObject();
                     boolean flg = IssueForm.this.updateOriginalEstimate(issueVo);
-                    Notification n = flg ? new Notification("GJira", "jira预估时间", "预估成功!", NotificationType.INFORMATION)
+                    final Notification n = flg ? new Notification("GJira", "jira预估时间", "预估成功!", NotificationType.INFORMATION)
                             : new Notification("GJira", "jira预估时间", "预估失败!", NotificationType.WARNING);
                     Notifications.Bus.notify(n, project);
+                    new GJiraNotificationTimer(n).start();
                     IssueForm.this.reload();
                 }
             }
@@ -150,7 +165,8 @@ public class IssueForm extends AbstractGJiraUi {
      */
     protected void reload() {
         List<IssueVo> issues = this.getIssues();
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("任务列表");
+        boolean flg = this.isTodayLoged();
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("任务列表(" + (flg ? "已" : "未") + "更新工作日志)");
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         for (IssueVo issueVo : issues) {
             treeModel.insertNodeInto(
@@ -227,12 +243,65 @@ public class IssueForm extends AbstractGJiraUi {
             JsonObject update = new JsonObject();
             update.add("update", timetracking);
             StringEntity json = new StringEntity(update.toString());
-            json.setContentType("application/json");
+            json.setContentType(Constants.Http.CONTENT_TYPE_JSON);
             put.setEntity(json);
             CloseableHttpResponse response = client.execute(put);
             return HttpStatus.SC_NO_CONTENT == response.getStatusLine().getStatusCode();
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 当日是否更新工作日志
+     * @return
+     */
+    private boolean isTodayLoged(){
+        try{
+            CloseableHttpClient client = HttpClients.createDefault();
+            String jql = MessageFormat.format("assignee={0} and worklogDate=now()", super.getUsername());
+            String param = URLEncoder.encode(jql, "UTF-8");
+            HttpGet get = new HttpGet(super.getJiraUrl() + Constants.JIRA.SEARCH + "?jql=" + param);
+            super.header(get);
+            CloseableHttpResponse response = client.execute(get);
+            if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
+                String json = EntityUtils.toString(response.getEntity());
+                JsonObject jsonObject = new Gson().fromJson(json, JsonObject.class);
+                return jsonObject.get("total").getAsInt() > 0;
+            }
+
+            return false;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    /**
+     * 记录工作日志
+     * @return
+     */
+    private boolean log(IssueVo issueVo){
+        try{
+            CloseableHttpClient client = HttpClients.createDefault();
+            HttpPost post = new HttpPost(MessageFormat.format(super.getJiraUrl() + Constants.JIRA.LOG, issueVo.getKey()));
+            super.header(post);
+            JsonObject body = new JsonObject();
+            // 2017-05-09T09:13:12.091+0000 时间格式
+            StringBuilder sb = new StringBuilder();
+            sb.append(DateUtils.formatDate(new Date(), "yyyy-MM-dd")); // 日期
+            sb.append("T"); // 占位
+            sb.append("09:00:00.000"); // 时间
+            sb.append("+0800"); // 时区
+            body.addProperty("started", sb.toString());
+            // 默认8小时
+            body.addProperty("timeSpentSeconds", 8 * 60 * 60);
+            StringEntity entity = new StringEntity(body.toString());
+            entity.setContentType(Constants.Http.CONTENT_TYPE_JSON);
+            post.setEntity(entity);
+            CloseableHttpResponse response = client.execute(post);
+            return HttpStatus.SC_CREATED == response.getStatusLine().getStatusCode();
+        }catch (Exception e){
             return false;
         }
     }
