@@ -3,6 +3,7 @@ package com.gome.idea.plugins.jira.toolwindow;
 import com.gome.idea.plugins.jira.AbstractGJiraUi;
 import com.gome.idea.plugins.jira.GJiraNotificationTimer;
 import com.gome.idea.plugins.jira.constant.Constants;
+import com.gome.idea.plugins.jira.util.JiraHttpUtil;
 import com.gome.idea.plugins.jira.vo.IssueVo;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -63,7 +64,7 @@ public class IssueForm extends AbstractGJiraUi {
                     IssueVo issueVo = (IssueVo) node.getUserObject();
                     boolean flg = IssueForm.this.log(issueVo);
                     final Notification n = flg ? new Notification("GJira", "jira工作日志记录", "记录成功!", NotificationType.INFORMATION)
-                            : new Notification("GJira", "jira工作日志记录", "记录失败!", NotificationType.WARNING);
+                            : new Notification("GJira", "jira工作日志记录", "记录失败!", NotificationType.ERROR);
                     Notifications.Bus.notify(n);
                     new GJiraNotificationTimer(n).start();
                     IssueForm.this.reload();
@@ -80,7 +81,7 @@ public class IssueForm extends AbstractGJiraUi {
                     IssueVo issueVo = (IssueVo) node.getUserObject();
                     boolean flg = IssueForm.this.updateOriginalEstimate(issueVo);
                     final Notification n = flg ? new Notification("GJira", "jira预估时间", "预估成功!", NotificationType.INFORMATION)
-                            : new Notification("GJira", "jira预估时间", "预估失败!", NotificationType.WARNING);
+                            : new Notification("GJira", "jira预估时间", "预估失败!", NotificationType.ERROR);
                     Notifications.Bus.notify(n);
                     new GJiraNotificationTimer(n).start();
                     IssueForm.this.reload();
@@ -164,7 +165,7 @@ public class IssueForm extends AbstractGJiraUi {
      */
     protected void reload() {
         List<IssueVo> issues = this.getIssues();
-        boolean flg = this.isTodayLoged();
+        boolean flg = JiraHttpUtil.isTodayLoged();
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("任务列表(" + (flg ? "已" : "未") + "更新工作日志)");
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         for (IssueVo issueVo : issues) {
@@ -252,29 +253,7 @@ public class IssueForm extends AbstractGJiraUi {
         }
     }
 
-    /**
-     * 当日是否更新工作日志
-     * @return
-     */
-    private boolean isTodayLoged(){
-        try{
-            CloseableHttpClient client = HttpClients.createDefault();
-            String jql = MessageFormat.format("assignee={0} and worklogDate=now()", super.getUsername());
-            String param = URLEncoder.encode(jql, "UTF-8");
-            HttpGet get = new HttpGet(super.getJiraUrl() + Constants.JIRA.SEARCH + "?jql=" + param);
-            super.header(get);
-            CloseableHttpResponse response = client.execute(get);
-            if (HttpStatus.SC_OK == response.getStatusLine().getStatusCode()) {
-                String json = EntityUtils.toString(response.getEntity());
-                JsonObject jsonObject = new Gson().fromJson(json, JsonObject.class);
-                return jsonObject.get("total").getAsInt() > 0;
-            }
 
-            return false;
-        }catch (Exception e){
-            return false;
-        }
-    }
 
     /**
      * 记录工作日志

@@ -30,5 +30,8 @@
     <actions>
     </actions>
     <application-components>
+        <component>
+            <implementation-class>com.gome.idea.plugins.jira.schedule.TimerApplication</implementation-class>
+        </component>
     </application-components>
 </idea-plugin>
