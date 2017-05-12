@@ -1,8 +1,8 @@
 <idea-plugin version="2">
     <id>com.gome.plugin.jira</id>
-    <name>Jira Connection Plugin</name>
+    <name>Connector For Gome Jira</name>
     <version>1.0</version>
-    <vendor email="xie__hai@sina.com" url="https://github.com/PasseRR">PasseRR</vendor>
+    <vendor email="xie__hai@sina.com" url="https://github.com/PasseRR/idea-jira-plugin">PasseRR</vendor>
 
     <description>
         <![CDATA[
