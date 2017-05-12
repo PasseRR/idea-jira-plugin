@@ -24,7 +24,7 @@
         <applicationService serviceInterface="com.gome.idea.plugins.jira.GJiraSettings"
                         serviceImplementation="com.gome.idea.plugins.jira.GJiraSettings"/>
         <!-- tool window配置 -->
-        <toolWindow id="jira" anchor="bottom" icon="/icon/jira.png" factoryClass="com.gome.idea.plugins.jira.toolwindow.GJiraToolWindow"/>
+        <toolWindow id="GJira" anchor="bottom" icon="/icon/jira.png" factoryClass="com.gome.idea.plugins.jira.toolwindow.GJiraToolWindow"/>
     </extensions>
 
     <actions>
