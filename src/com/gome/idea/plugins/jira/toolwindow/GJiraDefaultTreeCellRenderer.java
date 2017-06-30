@@ -19,7 +19,7 @@ public class GJiraDefaultTreeCellRenderer extends DefaultTreeCellRenderer {
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-        if (leaf) {
+        if (leaf && row != 0) {
             IssueVo issueVo = (IssueVo) ((DefaultMutableTreeNode) value).getUserObject();
             StringBuilder sb = new StringBuilder();
             sb.append(issueVo.getKey());
