@@ -1,5 +1,6 @@
 package com.gome.idea.plugins.jira.toolwindow;
 
+import com.gome.idea.plugins.jira.util.JiraTimeFormatUtil;
 import com.gome.idea.plugins.jira.vo.IssueVo;
 
 import javax.swing.*;
@@ -27,9 +28,17 @@ public class GJiraDefaultTreeCellRenderer extends DefaultTreeCellRenderer {
             sb.append(issueVo.getStatus());
             sb.append(" ");
             sb.append(issueVo.getSummary());
+            sb.append(" ");
+            sb.append(JiraTimeFormatUtil.formatTime(issueVo.getTimeOriginalEstimate()) + "d");
+            sb.append(" ");
+            sb.append(JiraTimeFormatUtil.formatTime(issueVo.getTimespent()) + "d");
             this.setText(sb.toString());
-            if(null == issueVo.getTimeOriginalEstimate()){
+            if(null == issueVo.getTimespent()){ // 未更新时间的标红
                 this.setForeground(Color.RED);
+            }
+            if(issueVo.getTimespent() != null
+                && !issueVo.getTimespent().equals(issueVo.getTimeOriginalEstimate())){
+               this.setForeground(Color.MAGENTA);
             }
 
             if (issueVo.getIssueType().contains("测试")) {

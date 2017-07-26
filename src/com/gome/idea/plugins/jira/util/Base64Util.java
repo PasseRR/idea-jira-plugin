@@ -5,7 +5,7 @@ package com.gome.idea.plugins.jira.util;
  * @date 2017/05/10 16:35
  * @Copyright(c) gome inc Gome Co.,LTD
  */
-public class Base64Util {
+public final class Base64Util {
     private Base64Util(){
 
     }

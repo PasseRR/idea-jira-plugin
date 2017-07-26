@@ -23,7 +23,7 @@ import java.text.MessageFormat;
  * @date 2017/05/11 15:51
  * @Copyright(c) gome inc Gome Co.,LTD
  */
-public class JiraHttpUtil {
+public final class JiraHttpUtil {
     private static final GJiraSettings settings = GJiraSettings.me();
     public static boolean login(){
         return login(settings.getJiraUrl(), settings.getUsername(), settings.getPassword());

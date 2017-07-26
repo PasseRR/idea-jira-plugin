@@ -4,6 +4,7 @@ import com.gome.idea.plugins.jira.AbstractGJiraUi;
 import com.gome.idea.plugins.jira.GJiraNotificationTimer;
 import com.gome.idea.plugins.jira.constant.Constants;
 import com.gome.idea.plugins.jira.util.JiraHttpUtil;
+import com.gome.idea.plugins.jira.util.JiraTimeFormatUtil;
 import com.gome.idea.plugins.jira.vo.IssueVo;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -71,7 +72,7 @@ public class IssueForm extends AbstractGJiraUi {
                 }
             }
         });
-        final JMenuItem time = new JMenuItem("预估时间", new ImageIcon(this.getClass().getResource("/icon/time.png")));
+        final JMenuItem time = new JMenuItem("同步时间", new ImageIcon(this.getClass().getResource("/icon/time.png")));
         time.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -80,8 +81,8 @@ public class IssueForm extends AbstractGJiraUi {
                 if (null != node) {
                     IssueVo issueVo = (IssueVo) node.getUserObject();
                     boolean flg = IssueForm.this.updateOriginalEstimate(issueVo);
-                    final Notification n = flg ? new Notification("GJira", "jira预估时间", "预估成功!", NotificationType.INFORMATION)
-                            : new Notification("GJira", "jira预估时间", "预估失败!", NotificationType.ERROR);
+                    final Notification n = flg ? new Notification("GJira", "jira时间同步", "同步成功!", NotificationType.INFORMATION)
+                            : new Notification("GJira", "jira时间同步", "同步失败!", NotificationType.ERROR);
                     Notifications.Bus.notify(n);
                     new GJiraNotificationTimer(n).start();
                     IssueForm.this.reload();
@@ -114,7 +115,9 @@ public class IssueForm extends AbstractGJiraUi {
                         if (!node.isRoot()) { // 非根节点
                             log.setEnabled(true);
                             IssueVo issueVo = (IssueVo) node.getUserObject();
-                            if (issueVo.getTimeOriginalEstimate() == null) {
+                            // 已有实际工作时间 可以同步预估时间和工作时间
+                            if (issueVo.getTimespent() != null
+                                && !issueVo.getTimespent().equals(issueVo.getTimeOriginalEstimate())) {
                                 time.setEnabled(true);
                             }
                         }
@@ -207,6 +210,8 @@ public class IssueForm extends AbstractGJiraUi {
                         issueVo.setSummary(fields.get("summary").getAsString());
                         JsonElement timeOriginalEstimate = fields.get("timeoriginalestimate");
                         issueVo.setTimeOriginalEstimate(timeOriginalEstimate.isJsonNull() ? null : timeOriginalEstimate.getAsLong());
+                        JsonElement timespent = fields.get("timespent");
+                        issueVo.setTimespent(timespent.isJsonNull() ? null : timespent.getAsLong());
                         JsonObject status = fields.get("status").getAsJsonObject();
                         issueVo.setStatus(status.get("name").getAsString());
                         JsonObject issueType = fields.get("issuetype").getAsJsonObject();
@@ -222,8 +227,8 @@ public class IssueForm extends AbstractGJiraUi {
     }
 
     /**
-     * 更新预估时间
-     *
+     * 同步预估时间和实际工作时间
+     * 保持预估时间和实际工作时间一致
      * @param issueVo
      */
     private boolean updateOriginalEstimate(IssueVo issueVo) {
@@ -234,8 +239,12 @@ public class IssueForm extends AbstractGJiraUi {
             JsonArray timeTrackingArray = new JsonArray();
             JsonObject edit = new JsonObject();
             JsonObject originalEstimate = new JsonObject();
-            // 默认预估3d
-            originalEstimate.addProperty("originalEstimate", "3d");
+            // 设置预估时间和工作时间一致
+            if(issueVo.getTimespent() == null){
+                return false;
+            }
+            originalEstimate.addProperty("originalEstimate", JiraTimeFormatUtil.formatTime(issueVo.getTimespent()).intValue() + "d");
+            originalEstimate.addProperty("remainingEstimate", "0m");
             edit.add("edit", originalEstimate);
             timeTrackingArray.add(edit);
             JsonObject timetracking = new JsonObject();

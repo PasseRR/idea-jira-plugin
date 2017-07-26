@@ -17,6 +17,8 @@ public class IssueVo {
     private String status;
     // 预估时间
     private Long timeOriginalEstimate;
+    // 已经消耗时间
+    private Long timespent;
 
     public String getKey() {
         return key;
@@ -58,14 +60,23 @@ public class IssueVo {
         this.timeOriginalEstimate = timeOriginalEstimate;
     }
 
+    public Long getTimespent() {
+        return timespent;
+    }
+
+    public void setTimespent(Long timespent) {
+        this.timespent = timespent;
+    }
+
     @Override
     public String toString() {
         return "IssueVo{" +
-                "key='" + key + '\'' +
-                ", issueType='" + issueType + '\'' +
-                ", summary='" + summary + '\'' +
-                ", status='" + status + '\'' +
-                ", timeOriginalEstimate=" + timeOriginalEstimate +
-                '}';
+            "key='" + key + '\'' +
+            ", issueType='" + issueType + '\'' +
+            ", summary='" + summary + '\'' +
+            ", status='" + status + '\'' +
+            ", timeOriginalEstimate=" + timeOriginalEstimate +
+            ", timespent=" + timespent +
+            '}';
     }
 }
