@@ -35,9 +35,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * tool window issues form
@@ -169,7 +167,7 @@ public class IssueForm extends AbstractGJiraUi {
     protected void reload() {
         List<IssueVo> issues = this.getIssues();
         boolean flg = JiraHttpUtil.isTodayLoged();
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("任务列表(今日" + (flg ? "已" : "未") + "更新工作日志)");
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(flg);
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         for (IssueVo issueVo : issues) {
             treeModel.insertNodeInto(

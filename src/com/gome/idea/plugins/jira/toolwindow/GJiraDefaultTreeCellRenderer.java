@@ -19,7 +19,6 @@ public class GJiraDefaultTreeCellRenderer extends DefaultTreeCellRenderer {
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-
         if (leaf && row != 0) {
             IssueVo issueVo = (IssueVo) ((DefaultMutableTreeNode) value).getUserObject();
             StringBuilder sb = new StringBuilder();
@@ -47,7 +46,14 @@ public class GJiraDefaultTreeCellRenderer extends DefaultTreeCellRenderer {
                 this.setIcon(new ImageIcon(this.getClass().getResource("/icon/task.png")));
             }
         } else {
-            this.setText(value.toString());
+            Boolean flag = Boolean.valueOf(value.toString());
+            if(!flag){
+                this.setForeground(Color.RED);
+            }else{
+                this.setForeground(Color.GREEN);
+            }
+            String text =  "任务列表(今日" + (flag ? "已" : "未") + "更新工作日志)";
+            this.setText(text);
             this.setIcon(new ImageIcon(this.getClass().getResource("/icon/list.png")));
         }
 
