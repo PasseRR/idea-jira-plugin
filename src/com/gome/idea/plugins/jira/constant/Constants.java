@@ -23,6 +23,10 @@ public interface Constants {
          * 记录工作日志
          */
         String LOG = "/rest/api/2/issue/{0}/worklog";
+        /**
+         * 工作流更新
+         */
+        String WORKFLOW = "/rest/api/2/issue/{0}/transitions";
     }
 
     interface Http {

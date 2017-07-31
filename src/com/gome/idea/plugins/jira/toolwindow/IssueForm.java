@@ -53,7 +53,7 @@ public class IssueForm extends AbstractGJiraUi {
 
     public IssueForm() {
         this.popupMenu = new JPopupMenu();
-        final JMenuItem log = new JMenuItem("记录工作日志" , new ImageIcon(this.getClass().getResource("/icon/log.png")));
+        final JMenuItem log = new JMenuItem("记录工作日志", new ImageIcon(this.getClass().getResource("/icon/log.png")));
         log.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -63,7 +63,7 @@ public class IssueForm extends AbstractGJiraUi {
                     IssueVo issueVo = (IssueVo) node.getUserObject();
                     boolean flg = IssueForm.this.log(issueVo);
                     final Notification n = flg ? new Notification("GJira", "jira工作日志记录", "记录成功!", NotificationType.INFORMATION)
-                            : new Notification("GJira", "jira工作日志记录", "记录失败!", NotificationType.ERROR);
+                        : new Notification("GJira", "jira工作日志记录", "记录失败!", NotificationType.ERROR);
                     Notifications.Bus.notify(n);
                     new GJiraNotificationTimer(n).start();
                     IssueForm.this.reload();
@@ -80,7 +80,25 @@ public class IssueForm extends AbstractGJiraUi {
                     IssueVo issueVo = (IssueVo) node.getUserObject();
                     boolean flg = IssueForm.this.updateOriginalEstimate(issueVo);
                     final Notification n = flg ? new Notification("GJira", "jira时间同步", "同步成功!", NotificationType.INFORMATION)
-                            : new Notification("GJira", "jira时间同步", "同步失败!", NotificationType.ERROR);
+                        : new Notification("GJira", "jira时间同步", "同步失败!", NotificationType.ERROR);
+                    Notifications.Bus.notify(n);
+                    new GJiraNotificationTimer(n).start();
+                    IssueForm.this.reload();
+                }
+            }
+        });
+
+        final JMenuItem status = new JMenuItem("完成", new ImageIcon(this.getClass().getResource("/icon/done.png")));
+        status.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 完成Issue
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) IssueForm.this.issueTree.getLastSelectedPathComponent();
+                if (null != node) {
+                    IssueVo issueVo = (IssueVo) node.getUserObject();
+                    boolean flg = IssueForm.this.done(issueVo);
+                    final Notification n = flg ? new Notification("GJira", "完成", "完成成功!", NotificationType.INFORMATION)
+                        : new Notification("GJira", "完成", "完成失败!", NotificationType.ERROR);
                     Notifications.Bus.notify(n);
                     new GJiraNotificationTimer(n).start();
                     IssueForm.this.reload();
@@ -97,6 +115,7 @@ public class IssueForm extends AbstractGJiraUi {
         });
         this.popupMenu.add(log);
         this.popupMenu.add(time);
+        this.popupMenu.add(status);
         this.popupMenu.addSeparator();
         this.popupMenu.add(refresh);
 
@@ -171,9 +190,9 @@ public class IssueForm extends AbstractGJiraUi {
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         for (IssueVo issueVo : issues) {
             treeModel.insertNodeInto(
-                    new DefaultMutableTreeNode(issueVo),
-                    root,
-                    root.getChildCount()
+                new DefaultMutableTreeNode(issueVo),
+                root,
+                root.getChildCount()
             );
         }
         this.issueTree.setModel(treeModel);
@@ -227,6 +246,7 @@ public class IssueForm extends AbstractGJiraUi {
     /**
      * 同步预估时间和实际工作时间
      * 保持预估时间和实际工作时间一致
+     *
      * @param issueVo
      */
     private boolean updateOriginalEstimate(IssueVo issueVo) {
@@ -238,7 +258,7 @@ public class IssueForm extends AbstractGJiraUi {
             JsonObject edit = new JsonObject();
             JsonObject originalEstimate = new JsonObject();
             // 设置预估时间和工作时间一致
-            if(issueVo.getTimespent() == null){
+            if (issueVo.getTimespent() == null) {
                 return false;
             }
             originalEstimate.addProperty("originalEstimate", JiraTimeFormatUtil.formatTime(issueVo.getTimespent()).intValue() + "d");
@@ -261,18 +281,18 @@ public class IssueForm extends AbstractGJiraUi {
     }
 
 
-
     /**
      * 记录工作日志
+     *
      * @return
      */
-    private boolean log(IssueVo issueVo){
-        try{
+    private boolean log(IssueVo issueVo) {
+        try {
             CloseableHttpClient client = HttpClients.createDefault();
             HttpPost post = new HttpPost(MessageFormat.format(super.getJiraUrl() + Constants.JIRA.LOG, issueVo.getKey()));
             super.header(post);
             JsonObject body = new JsonObject();
-            // 2017-05-09T09:13:12.091+0000 时间格式
+            // 2017-05-09T09:13:12.091+0000 时间格式WORKFLOW
             StringBuilder sb = new StringBuilder();
             sb.append(DateUtils.formatDate(new Date(), "yyyy-MM-dd")); // 日期
             sb.append("T"); // 占位
@@ -286,8 +306,36 @@ public class IssueForm extends AbstractGJiraUi {
             post.setEntity(entity);
             CloseableHttpResponse response = client.execute(post);
             return HttpStatus.SC_CREATED == response.getStatusLine().getStatusCode();
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
+    }
+
+    // 21 开始开发
+    // 31 开发完成
+    // 131 开始联调
+    // 141 联调成功
+    private static final List<String> TRANSITIONS = Arrays.asList("21", "31", "131", "141");
+
+    private boolean done(IssueVo issueVo) {
+        try {
+            CloseableHttpClient client = HttpClients.createDefault();
+            for (String transitionId : TRANSITIONS) {
+                HttpPost post = new HttpPost(MessageFormat.format(super.getJiraUrl() + Constants.JIRA.WORKFLOW, issueVo.getKey()));
+                super.header(post);
+                JsonObject body = new JsonObject();
+                JsonObject transition = new JsonObject();
+                transition.addProperty("id", transitionId);
+                body.add("transition", transition);
+                StringEntity entity = new StringEntity(body.toString());
+                entity.setContentType(Constants.Http.CONTENT_TYPE_JSON);
+                post.setEntity(entity);
+                client.execute(post);
+            }
+        } catch (Exception e) {
+            return false;
+        }
+
+        return true;
     }
 }

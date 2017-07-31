@@ -4,15 +4,38 @@
     <version>1.0</version>
     <vendor email="xie__hai@sina.com" url="https://github.com/PasseRR/idea-jira-plugin">PasseRR</vendor>
 
+    <version>1.2</version>
+
     <description>
         <![CDATA[
-          用于Jira工作任务更新<br>
+          <p>
+            用于Jira工作任务更新
+          </p>
         ]]>
     </description>
 
     <change-notes>
         <![CDATA[
-          beta version
+          <p>
+            v1.2
+            <ul>
+              <li>任务完成功能添加</li>
+            </ul>
+          </p>
+          <p>
+            v1.1
+            <ul>
+              <li>预估时间和耗费时间同步成一样</li>
+            </ul>
+          </p>
+          <p>
+            v1.0
+            <ul>
+              <li>jira用户名、密码设置</li>
+              <li>任务列表</li>
+              <li>对jira日志记录基本支持</li>
+            </ul>
+          </p>
         ]]>
     </change-notes>
 
