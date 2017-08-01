@@ -45,6 +45,7 @@ import java.util.*;
  * @Copyright(c) gome inc Gome Co.,LTD
  */
 public class IssueForm extends AbstractGJiraUi {
+    private static ResourceBundle resourceBundle = ResourceBundle.getBundle("jira");
     private static IssueForm instance;
     private JPanel rootPanel;
     private JTree issueTree;
@@ -211,7 +212,7 @@ public class IssueForm extends AbstractGJiraUi {
         List<IssueVo> issues = new ArrayList<IssueVo>();
         try {
             CloseableHttpClient client = HttpClients.createDefault();
-            String jql = MessageFormat.format("resolution = {0} and assignee = {1}", "Unresolved", super.getUsername());
+            String jql = MessageFormat.format("resolution not in ({0}, {1}) and assignee = {2}", "完成", "已解决", super.getUsername());
             String param = URLEncoder.encode(jql, "UTF-8");
             HttpGet get = new HttpGet(super.getJiraUrl() + Constants.JIRA.SEARCH + "?jql=" + param);
             super.header(get);
@@ -313,16 +314,11 @@ public class IssueForm extends AbstractGJiraUi {
         }
     }
 
-    // 21 开始开发
-    // 31 开发完成
-    // 131 开始联调
-    // 141 联调成功
-    private static final List<String> TRANSITIONS = Arrays.asList("21", "31", "131", "141");
-
     private boolean done(IssueVo issueVo) {
         try {
+            String []transitions = resourceBundle.getString("transitions").split(",");
             CloseableHttpClient client = HttpClients.createDefault();
-            for (String transitionId : TRANSITIONS) {
+            for (String transitionId : transitions) {
                 HttpPost post = new HttpPost(MessageFormat.format(super.getJiraUrl() + Constants.JIRA.WORKFLOW, issueVo.getKey()));
                 super.header(post);
                 JsonObject body = new JsonObject();
