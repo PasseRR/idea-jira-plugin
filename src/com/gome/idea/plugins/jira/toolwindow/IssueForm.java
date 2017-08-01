@@ -126,11 +126,13 @@ public class IssueForm extends AbstractGJiraUi {
                 if (e.getButton() == MouseEvent.BUTTON3) { // 右键
                     log.setEnabled(false);
                     time.setEnabled(false);
+                    status.setEnabled(false);
                     if (path != null) {
                         IssueForm.this.issueTree.setSelectionPath(path);
                         DefaultMutableTreeNode node = (DefaultMutableTreeNode) IssueForm.this.issueTree.getLastSelectedPathComponent();
                         if (!node.isRoot()) { // 非根节点
                             log.setEnabled(true);
+                            status.setEnabled(true);
                             IssueVo issueVo = (IssueVo) node.getUserObject();
                             // 已有实际工作时间 可以同步预估时间和工作时间
                             if (issueVo.getTimespent() != null
