@@ -151,21 +151,9 @@ public class IssueForm extends AbstractGJiraUi {
     public IssueForm(GJiraToolWindow toolWindow) {
         this();
         this.toolWindow = toolWindow;
-    }
-
-    public static IssueForm me(GJiraToolWindow toolWindow) {
-        if (null == instance) {
-            synchronized (IssueForm.class) {
-                if (null == instance) {
-                    instance = new IssueForm(toolWindow);
-                }
-            }
-        }
 
         // 重新加载数据
-        instance.reload();
-
-        return instance;
+        this.reload();
     }
 
     @Override

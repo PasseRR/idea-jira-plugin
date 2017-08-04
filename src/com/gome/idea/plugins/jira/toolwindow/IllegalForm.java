@@ -41,18 +41,6 @@ public class IllegalForm implements GJiraUi{
         this.toolWindow = toolWindow;
     }
 
-    public static IllegalForm me(GJiraToolWindow toolWindow){
-        if (null == instance) {
-            synchronized (IllegalForm.class) {
-                if(null == instance){
-                    instance = new IllegalForm(toolWindow);
-                }
-            }
-        }
-
-        return instance;
-    }
-
     @Override
     public JComponent getRootComponent() {
         return this.rootPanel;
