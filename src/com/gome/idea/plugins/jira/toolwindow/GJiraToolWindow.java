@@ -31,8 +31,10 @@ public class GJiraToolWindow implements ToolWindowFactory {
                 new ToolWindowManagerAdapter() {
                     @Override
                     public void stateChanged() {
-                        ToolWindow jira = ToolWindowManagerEx.getInstance(project).getToolWindow("jira");
-                        if (jira != null) {
+                        // plugin.xml ToolWindow id
+                        ToolWindow jira = ToolWindowManagerEx.getInstance(project).getToolWindow("GJira");
+                        // 激活ToolWindow做刷新操作
+                        if (jira != null && jira.isVisible()) {
                             GJiraToolWindow.this.reload();
                         }
                     }
