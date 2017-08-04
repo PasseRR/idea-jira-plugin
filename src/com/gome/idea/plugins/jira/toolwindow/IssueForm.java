@@ -212,7 +212,7 @@ public class IssueForm extends AbstractGJiraUi {
         List<IssueVo> issues = new ArrayList<IssueVo>();
         try {
             CloseableHttpClient client = HttpClients.createDefault();
-            String jql = MessageFormat.format("resolution not in ({0}, {1}) and assignee = {2}", "完成", "已解决", super.getUsername());
+            String jql = MessageFormat.format("{0} and assignee = {1}", resourceBundle.getString("queryIssuesConditions"), super.getUsername());
             String param = URLEncoder.encode(jql, "UTF-8");
             HttpGet get = new HttpGet(super.getJiraUrl() + Constants.JIRA.SEARCH + "?jql=" + param);
             super.header(get);
