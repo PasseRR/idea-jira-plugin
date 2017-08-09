@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.wm.ToolWindow;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -35,7 +36,10 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * tool window issues form
@@ -50,7 +54,7 @@ public class IssueForm extends AbstractGJiraUi {
     private JPanel rootPanel;
     private JTree issueTree;
     private JPopupMenu popupMenu;
-    private GJiraToolWindow toolWindow;
+    private ToolWindow toolWindow;
 
     public IssueForm() {
         this.popupMenu = new JPopupMenu();
@@ -111,7 +115,7 @@ public class IssueForm extends AbstractGJiraUi {
         refresh.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                IssueForm.this.toolWindow.reload();
+                GJiraToolWindow.reload(toolWindow);
             }
         });
         this.popupMenu.add(log);
@@ -148,7 +152,7 @@ public class IssueForm extends AbstractGJiraUi {
         });
     }
 
-    public IssueForm(GJiraToolWindow toolWindow) {
+    public IssueForm(ToolWindow toolWindow) {
         this();
         this.toolWindow = toolWindow;
 
@@ -305,8 +309,9 @@ public class IssueForm extends AbstractGJiraUi {
     private boolean done(IssueVo issueVo) {
         try {
             String []transitions = resourceBundle.getString("transitions").split(",");
-            CloseableHttpClient client = HttpClients.createDefault();
             for (String transitionId : transitions) {
+                CloseableHttpClient client = HttpClients.createDefault();
+
                 HttpPost post = new HttpPost(MessageFormat.format(super.getJiraUrl() + Constants.JIRA.WORKFLOW, issueVo.getKey()));
                 super.header(post);
                 JsonObject body = new JsonObject();
@@ -317,6 +322,8 @@ public class IssueForm extends AbstractGJiraUi {
                 entity.setContentType(Constants.Http.CONTENT_TYPE_JSON);
                 post.setEntity(entity);
                 client.execute(post);
+
+                client.close();
             }
         } catch (Exception e) {
             return false;

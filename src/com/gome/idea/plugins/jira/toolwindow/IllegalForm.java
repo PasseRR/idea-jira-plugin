@@ -2,6 +2,8 @@ package com.gome.idea.plugins.jira.toolwindow;
 
 import com.gome.idea.plugins.jira.GJiraUi;
 import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.wm.ToolWindow;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
@@ -18,25 +20,24 @@ public class IllegalForm implements GJiraUi{
     private JButton toSettingsButton;
     private JLabel illegalLabel;
     private JButton refreshButton;
-    private GJiraToolWindow toolWindow;
-    private static IllegalForm instance;
+    private ToolWindow toolWindow;
     public IllegalForm() {
         toSettingsButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // 跳转settings配置
-                ShowSettingsUtil.getInstance().showSettingsDialog(IllegalForm.this.toolWindow.getProject(), "Gjira");
+                ShowSettingsUtil.getInstance().showSettingsDialog(ProjectManager.getInstance().getOpenProjects()[0], "Gjira");
             }
         });
         refreshButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                IllegalForm.this.toolWindow.reload();
+                GJiraToolWindow.reload(toolWindow);
             }
         });
     }
 
-    public IllegalForm(GJiraToolWindow toolWindow){
+    public IllegalForm(ToolWindow toolWindow){
         this();
         this.toolWindow = toolWindow;
     }

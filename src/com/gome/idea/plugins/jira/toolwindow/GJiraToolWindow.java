@@ -2,6 +2,7 @@ package com.gome.idea.plugins.jira.toolwindow;
 
 import com.gome.idea.plugins.jira.util.JiraHttpUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ex.ProjectManagerEx;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ex.ToolWindowManagerAdapter;
@@ -20,55 +21,49 @@ import javax.swing.*;
  * @Copyright(c) gome inc Gome Co.,LTD
  */
 public class GJiraToolWindow implements ToolWindowFactory {
-    private ToolWindow root;
-    private Project project;
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        this.root = toolWindow;
-        this.project = project;
-        this.reload();
+        reload(toolWindow);
 
         // toolWindow 状态变化监听
         ToolWindowManagerEx.getInstanceEx(project).addToolWindowManagerListener(
             new ToolWindowManagerAdapter() {
                 @Override
                 public void stateChanged() {
-                    // plugin.xml ToolWindow id
-                    ToolWindow jira = ToolWindowManagerEx.getInstance(GJiraToolWindow.this.project).getToolWindow("GJira");
-                    // 激活ToolWindow做刷新操作
-                    if (jira != null && jira.isVisible()) {
-                        GJiraToolWindow.this.reload();
+                    // 对所有打开的idea实例进行reload
+                    Project[] projects = ProjectManagerEx.getInstanceEx().getOpenProjects();
+                    for (Project p : projects) {
+                        // plugin.xml ToolWindow id
+                        ToolWindow jira = ToolWindowManagerEx.getInstance(p).getToolWindow("GJira");
+                        // 激活ToolWindow做刷新操作
+                        if (jira != null && jira.isVisible()) {
+                            reload(jira);
+                        }
                     }
                 }
             }
         );
     }
 
-    /**
-     * tool window reload
-     */
-    public void reload() {
-        boolean flg = JiraHttpUtil.login();
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-        JComponent component;
-        if (!flg) {
-            // 提示用户配置登录信息不合法
-            // 跳转到settings配置
-            component = new IllegalForm(this).getRootComponent();
-        } else {
-            component = new IssueForm(this).getRootComponent();
-        }
-        ContentManager contentManager = this.root.getContentManager();
+    static void reload(ToolWindow root){
+        JComponent component = getDisplayComponent(root);
+        ContentManager contentManager = root.getContentManager();
+        ContentFactory contentFactory = contentManager.getFactory();
         final String contentName = "GJira-Control";
-        Content current = contentManager.findContent(contentName);
-        if (null != current) {
-            contentManager.removeContent(current, true);
-        }
-        Content content = contentFactory.createContent(component, contentName, false);
+        contentManager.removeAllContents(true);
+        Content content = contentFactory.createContent(component, contentName, true);
         contentManager.addContent(content);
     }
 
-    public Project getProject(){
-        return this.project;
+    /**
+     * 获得要展示的JComponent
+     * @return {@link JComponent}
+     */
+    private static JComponent getDisplayComponent(ToolWindow root) {
+        boolean flg = JiraHttpUtil.login();
+        // 提示用户配置登录信息不合法
+        // 跳转到settings配置
+        return flg ? new IssueForm(root).getRootComponent()
+            : new IllegalForm(root).getRootComponent();
     }
 }
